@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gợi ý món ăn AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1>Ăn gì hôm nay?</h1>
+
+    <form id="mealForm">
+      <label for="budget">Ngân sách (VNĐ):</label>
+      <input
+        type="number"
+        id="budget"
+        name="budget"
+        required
+        min="1000"
+        step="1000"
+      />
+
+      <label for="ingredients"
+        >Nguyên liệu có sẵn (ví dụ: thịt gà, rau cải, cà chua):</label
+      >
+      <textarea
+        id="ingredients"
+        name="ingredients"
+        rows="3"
+        required
+      ></textarea>
+
+      <label for="preference">Sở thích món ăn (tùy chọn):</label>
+      <input
+        type="text"
+        id="preference"
+        name="preference"
+        placeholder="ví dụ: món xào, món chiên"
+      />
+
+      <button type="submit">Gợi ý món ăn</button>
+    </form>
+
+    <h2>Kết quả gợi ý món ăn:</h2>
+    <div id="result">Chưa có kết quả</div>
+
+    <script>
+      const form = document.getElementById("mealForm");
+      const resultDiv = document.getElementById("result");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const budget = form.budget.value.trim();
+        const ingredients = form.ingredients.value.trim();
+        const preference = form.preference.value.trim();
+
+        if (!budget || !ingredients) {
+          resultDiv.textContent =
+            "Vui lòng nhập đầy đủ ngân sách và nguyên liệu.";
+          return;
+        }
+
+        resultDiv.textContent = "Đang gửi yêu cầu...";
+
+        try {
+          const response = await fetch(
+            "http://localhost:3000/api/suggest-meal",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ budget, ingredients, preference }),
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.result) {
+            resultDiv.textContent = data.result;
+          } else if (data.error) {
+            resultDiv.textContent = `Lỗi: ${data.error}`;
+          } else {
+            resultDiv.textContent =
+              "Không nhận được phản hồi hợp lệ từ server.";
+          }
+        } catch (err) {
+          resultDiv.textContent = "Lỗi khi gọi API: " + err.message;
+        }
+      });
+    </script>
+  </body>
+</html>
